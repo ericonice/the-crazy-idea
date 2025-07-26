@@ -19,13 +19,13 @@
    ```
    dotnet build
    ```
-4. Modify the `appsettings.json` file to configure your PostgreSQL connection string:
-   ```json
-   {
-	 "ConnectionStrings": {
-	   "DefaultConnection": "Host=localhost;Port=5432;Database=the_crazy_idea;Username=your_username;Password=your_password"
-	 }
-   }
+4. Set environment variable for PostgreSQL connection string:
+   ```
+   Host=localhost;Port=5432;Database=the_crazy_idea;Username=your_username;Password=your_password
+   ```
+   For example, to set in PowerShell, you can use:
+   ```powershell
+    $env:ConnectionStrings__DefaultConnection = "Host=localhost;Database=the-crazy-idea;Username=your_username;Password=your_password"
    ```
    Note: The first time the application is run, it will create the database and schema automatically, so there is not need to create the database manually.
 

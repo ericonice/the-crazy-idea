@@ -18,6 +18,7 @@ internal class Program
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables()
             .Build();
 
         var serviceProvider = new ServiceCollection()

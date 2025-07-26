@@ -1,0 +1,33 @@
+﻿namespace Earthquakes.Domain;
+
+public record ChiSquaredEntryForEarthquakeInterval(
+    DateOnly StartDay,
+    DateOnly EndDay,
+    decimal MinimumMagnitude,
+    int IntervalOffsetInDays,
+    int IntervalDurationInDays,
+    AlignmentType AlignmentType,
+    int TotalNumberOfDays,
+    int TotalNumberOfEarthquakes,
+    int TotalNumberOfEarthquakeDays,
+    int TotalNumberOfTargets,
+    int DaysInTargetIntervals,
+    int DaysOutsideTargetIntervals,
+    int NumberOfIntervalEarthquakes,
+    int NumberOfIntervalEarthquakeDays,
+    decimal PercentageOfTargetDays,
+    decimal PercentageOfEarthquakes,
+    decimal PercentageOfEarthquakeDays,
+    decimal ExpectedNumberOfEarthquakes,
+    decimal ExpectedNumberOfEarthquakeDays,
+    decimal ObservedHDT,
+    decimal ObservedMDT,
+    decimal ObservedHDOT,
+    decimal ObservedMDOT,
+    decimal ExpectedHDT,
+    decimal ExpectedMDT,
+    decimal ExpectedHDOT,
+    decimal ExpectedMDOT,
+    decimal ChiSquare,
+    double PValue
+);

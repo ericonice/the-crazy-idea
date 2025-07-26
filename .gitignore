@@ -1,0 +1,19 @@
+## Ignore build output
+bin/
+obj/
+output/
+.vs/
+*.user
+*.suo
+
+## Ignore temporary files
+*.tmp
+*.log
+
+## Ignore dependencies
+*.dll
+*.exe
+
+## Ignore IDE-specific settings
+.idea/
+.vscode/

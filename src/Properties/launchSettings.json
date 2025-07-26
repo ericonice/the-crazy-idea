@@ -1,0 +1,47 @@
+{
+  "profiles": {
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    },
+    "Load earthquake data": {
+      "commandName": "Project",
+      "commandLineArgs": "--command-type LoadEarthquakes --start-date 1900-1-1 --end-date 2025-12-31 --minimum-magnitude 7"
+    },
+    "Load ephemeris data": {
+      "commandName": "Project",
+      "commandLineArgs": "--command-type LoadEphemeris --center-body earth --target-body venus --start-date 1960-1-1 --end-date 2024-12-31"
+    },
+    "Load sun spots": {
+      "commandName": "Project",
+      "commandLineArgs": "--command-type LoadSunSpots --filename C:\\the-crazy-idea\\SN_d_tot_V2.0.csv"
+    },
+    "Get sun spots": {
+      "commandName": "Project",
+      "commandLineArgs": "--command-type GetSunSpots"
+    },
+    "Get ephemeris data": {
+      "commandName": "Project",
+      "commandLineArgs": "--command-type GetEphemeris --center-body earth --target-body mercury --start-date 1900-1-1 --end-date 2025-12-31",
+      "environmentVariables": {
+        "TargetBody": ""
+      }
+    },
+    "Get earthquake data": {
+      "commandName": "Project",
+      "commandLineArgs": "--command-type GetEarthquakes "
+    },
+    "Evaluate Chi Squared for earthquake intervals": {
+      "commandName": "Project",
+      "commandLineArgs": "--command-type EvaluateChiSquaredForEarthquakeIntervals --center-body earth --target-body jupiter --minimum-magnitude 7 --start-date 1/1/1960 --end-date 12/31/2025 --interval-offset-start 59 --interval-offset-end 59 --minimum-interval 30 --maximum-interval 30 --alignment offside"
+    },
+    "Help": {
+      "commandName": "Project",
+      "commandLineArgs": "--help"
+    },
+    "Determine earthquakes in interval": {
+      "commandName": "Project",
+      "commandLineArgs": "--command-type DetermineEarthquakesInInterval --center-body earth --target-body jupiter --minimum-magnitude 7 --start-date 1/1/1960 --end-date 12/31/2024 --interval-offset-start 141 --interval-offset-end 170 --alignment offside"
+    }
+  }
+}

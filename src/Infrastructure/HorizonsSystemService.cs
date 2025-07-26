@@ -42,9 +42,9 @@ public class HorizonsSystemService
         // Remove non-date portion of date
         data = Regex.Replace(data, @"00:00", "");
 
-        var dataAsCvs = headers + Environment.NewLine + data;
+        var dataAsCsv = headers + Environment.NewLine + data;
         EphemerisEntry[] entries;
-        using (var reader = new StringReader(dataAsCvs))
+        using (var reader = new StringReader(dataAsCsv))
         using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
         {
             csv.Context.RegisterClassMap<EphemerisEntryMap>();

@@ -21,7 +21,6 @@ internal class Program
             .Build();
 
         var serviceProvider = new ServiceCollection()
-            .AddSingleton<IConfiguration>(configuration)
             .AddSingleton<VersionProvider>()
             .AddSingleton<IConfiguration>(configuration)
             .AddLogging(builder =>

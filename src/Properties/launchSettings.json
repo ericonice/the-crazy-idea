@@ -8,7 +8,7 @@
       "commandName": "Project",
       "commandLineArgs": "--command-type LoadEarthquakes --start-date 1900-1-1 --end-date 2025-12-31 --minimum-magnitude 7"
     },
-    "Load ephemerisis data": {
+    "Load ephemeris data": {
       "commandName": "Project",
       "commandLineArgs": "--command-type LoadEphemeris --center-body earth --target-body venus --start-date 1960-1-1 --end-date 2024-12-31"
     },

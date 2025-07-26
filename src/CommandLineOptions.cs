@@ -25,7 +25,7 @@ public class CommandLineOptions
         "interval-offset-end",
         Required = false,
         Default = 15,
-        HelpText = "Interval Offset End in Days"
+        HelpText = "Interval Offset End in days"
     )]
     public int? IntervalOffsetEnd { get; set; }
 
@@ -33,7 +33,7 @@ public class CommandLineOptions
         "interval-offset-start",
         Required = false,
         Default = -30,
-        HelpText = "Interval Offset Start in Days"
+        HelpText = "Interval Offset Start in days"
     )]
     public int? IntervalOffsetStart { get; set; }
 
@@ -41,7 +41,7 @@ public class CommandLineOptions
         "maximum-interval",
         Required = false,
         Default = 60,
-        HelpText = "Maximum interval in ays"
+        HelpText = "Maximum interval ind days"
     )]
     public int? MaximumInterval { get; set; }
 

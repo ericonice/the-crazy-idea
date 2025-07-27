@@ -19,7 +19,7 @@ public enum CommandType
     [Description("Creates a CSV file from the existing ephemeris data.")]
     GetEphemeris,
 
-    [Description("Creats a CSV file from the existing sun spots data.")]
+    [Description("Creates a CSV file from the existing sun spots data.")]
     GetSunSpots,
 
     [Description("Evaluates the Chi Squared for the earthquake intervals.")]

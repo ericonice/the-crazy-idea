@@ -98,10 +98,6 @@ internal class Program
                 );
                 break;
 
-            case CommandType.GetEarthquakes:
-                await mediator.Send(new GetEarthquakesAsCsvQuery());
-                break;
-
             case CommandType.GetEphemeris:
                 await mediator.Send(
                     new GetEphemerisEntriesAsCsvQuery(
@@ -156,13 +152,12 @@ internal class Program
                 );
                 break;
 
-            case CommandType.GetEarthquakesWithEphemeris:
+            case CommandType.GetEarthquakes:
                 await mediator.Send(
-                    new GetEarthquakesWithEphemerisAsCsvQuery(
+                    new GetEarthquakesAsCsvQuery(
                         StartOn: startOn,
                         EndOn: endOn,
                         CenterBody: centerBody,
-                        TargetBody: targetBody,
                         MinimumMagnitude: minimumMagnitude
                     )
                 );

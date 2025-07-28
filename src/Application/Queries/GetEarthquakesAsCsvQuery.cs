@@ -57,6 +57,27 @@ public class GetEarthquakesAsCsvQueryHandler(
             .GroupBy(e => (e.TargetBody, e.Day))
             .ToDictionary(g => g.Key, g => g.First());
 
+        // Find the onside and offside minima for Jupiter, so that we can determine the
+        // offset from the minima
+        var jupiterOffsideMinima = await _dbContext
+            .EphemerisEntries.Where(eph =>
+                eph.CenterBody == (int)request.CenterBody
+                && eph.TargetBody == (int)Body.jupiter
+                && eph.OffsideMinimum
+            )
+            .OrderBy(eph => eph.Day)
+            .Select(eph => eph.Day)
+            .ToArrayAsync(cancellationToken);
+        var jupiterOnsideMinima = await _dbContext
+            .EphemerisEntries.Where(eph =>
+                eph.CenterBody == (int)request.CenterBody
+                && eph.TargetBody == (int)Body.jupiter
+                && eph.OnsideMinimum
+            )
+            .OrderBy(eph => eph.Day)
+            .Select(eph => eph.Day)
+            .ToArrayAsync(cancellationToken);
+
         var earthquakesWithEphemeris = earthquakes
             .Select(e => new
             {
@@ -74,7 +95,9 @@ public class GetEarthquakesAsCsvQueryHandler(
                 LunaSto = ephByTargetBodyAndDay[((int)Body.luna, e.Day)].StoAngle,
                 LunaSot = ephByTargetBodyAndDay[((int)Body.luna, e.Day)].SotAngle,
                 JupiterSto = ephByTargetBodyAndDay[((int)Body.jupiter, e.Day)].StoAngle,
-                JupiterSot = ephByTargetBodyAndDay[((int)Body.jupiter, e.Day)].SotAngle
+                JupiterSot = ephByTargetBodyAndDay[((int)Body.jupiter, e.Day)].SotAngle,
+                JupiterOnsideOffset = GetOffsetFromMinimaOrDefault(e.Day, jupiterOnsideMinima),
+                JupiterOffsideOffset = GetOffsetFromMinimaOrDefault(e.Day, jupiterOffsideMinima)
             })
             .ToArray();
 
@@ -84,5 +107,35 @@ public class GetEarthquakesAsCsvQueryHandler(
         );
         using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
         csv.WriteRecords(earthquakesWithEphemeris);
+    }
+
+    private static int? GetOffsetFromMinimaOrDefault(
+        DateOnly target,
+        DateOnly[] minima,
+        int minimumOffsetAllowed = -50,
+        int maximumOffsetAllowed = 300
+    )
+    {
+        var minimumOffset = default(int?);
+        foreach (var minimum in minima)
+        {
+            var offset = target.DayNumber - minimum.DayNumber;
+
+            if (offset >= minimumOffsetAllowed && offset <= maximumOffsetAllowed)
+            {
+                if (minimumOffset is null || Math.Abs(offset) < Math.Abs(minimumOffset.Value))
+                {
+                    minimumOffset = offset;
+                }
+            }
+
+            // Differences only going to get larger, so we can stop checking
+            if (offset < minimumOffsetAllowed)
+            {
+                return minimumOffset;
+            }
+        }
+
+        return minimumOffset;
     }
 }

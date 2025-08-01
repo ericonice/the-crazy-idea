@@ -1,25 +1,141 @@
 ﻿using System.Globalization;
 using CsvHelper;
 using Earthquakes.Application.Extensions;
+using Earthquakes.Domain;
 using Earthquakes.Infrastructure;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace Earthquakes.Application.Queries;
 
-public record GetEarthquakesAsCsvQuery() : IRequest;
+public record GetEarthquakesAsCsvQuery(
+    DateOnly StartOn,
+    DateOnly EndOn,
+    decimal MinimumMagnitude,
+    Body CenterBody
+) : IRequest;
 
-public class GetEarthquakesAsCsvQueryHandler(AppDbContext dbContext, IConfiguration configuration)
-    : IRequestHandler<GetEarthquakesAsCsvQuery>
+public class GetEarthquakesAsCsvQueryHandler(
+    AppDbContext dbContext,
+    IConfiguration configuration,
+    VersionProvider versionProvider
+) : IRequestHandler<GetEarthquakesAsCsvQuery>
 {
-    private readonly AppDbContext _dbContext = dbContext;
     private readonly IConfiguration _configuration = configuration;
+    private readonly AppDbContext _dbContext = dbContext;
+    private readonly VersionProvider _versionProvider = versionProvider;
 
-    public Task Handle(GetEarthquakesAsCsvQuery request, CancellationToken cancellationToken)
+    public async Task Handle(GetEarthquakesAsCsvQuery request, CancellationToken cancellationToken)
     {
-        using var writer = new StreamWriter(_configuration.GetFullPath("earthquakes.csv"));
+        Console.Out.WriteLine("=================================================================");
+        Console.Out.WriteLine("Getting earthquakes.");
+        Console.Out.WriteLine($"Start Date            : {request.StartOn}");
+        Console.Out.WriteLine($"End Date              : {request.EndOn}");
+        Console.Out.WriteLine($"Center Body           : {request.CenterBody}");
+        Console.Out.WriteLine($"Minimum Magnitude     : {request.MinimumMagnitude}");
+        Console.Out.WriteLine("=================================================================");
+
+        var earthquakes = await _dbContext
+            .Earthquakes.Where(e =>
+                e.OccurredOn.Date >= request.StartOn.ToDateTime(TimeOnly.MinValue)
+                && e.OccurredOn.Date <= request.EndOn.ToDateTime(TimeOnly.MinValue)
+                && e.Magnitude >= request.MinimumMagnitude
+            )
+            .Select(e => new { Earthquake = e, Day = DateOnly.FromDateTime(e.OccurredOn.Date) })
+            .ToArrayAsync(cancellationToken);
+        Console.Out.WriteLine($"Number of earthquakes in date range: {earthquakes.Length}");
+
+        // Find the ephemeris entries for the days an earthquake occurred
+        var ephemerisEntries = await _dbContext
+            .EphemerisEntries.Where(eph =>
+                eph.CenterBody == (int)request.CenterBody
+                && earthquakes.Select(e => e.Day).Contains(eph.Day)
+            )
+            .ToListAsync(cancellationToken);
+        var ephByTargetBodyAndDay = ephemerisEntries
+            .GroupBy(e => (e.TargetBody, e.Day))
+            .ToDictionary(g => g.Key, g => g.First());
+
+        // Find the onside and offside minima for Jupiter, so that we can determine the
+        // offset from the minima
+        var jupiterOffsideMinima = await _dbContext
+            .EphemerisEntries.Where(eph =>
+                eph.CenterBody == (int)request.CenterBody
+                && eph.TargetBody == (int)Body.jupiter
+                && eph.OffsideMinimum
+            )
+            .OrderBy(eph => eph.Day)
+            .Select(eph => eph.Day)
+            .ToArrayAsync(cancellationToken);
+        var jupiterOnsideMinima = await _dbContext
+            .EphemerisEntries.Where(eph =>
+                eph.CenterBody == (int)request.CenterBody
+                && eph.TargetBody == (int)Body.jupiter
+                && eph.OnsideMinimum
+            )
+            .OrderBy(eph => eph.Day)
+            .Select(eph => eph.Day)
+            .ToArrayAsync(cancellationToken);
+
+        var earthquakesWithEphemeris = earthquakes
+            .Select(e => new
+            {
+                e.Earthquake.OccurredOn,
+                e.Earthquake.Latitude,
+                e.Earthquake.Longitude,
+                e.Earthquake.Depth,
+                e.Earthquake.Magnitude,
+                e.Earthquake.MagnitudeType,
+                e.Earthquake.MagnitudeError,
+                e.Earthquake.MagnitudeSource,
+                e.Earthquake.Place,
+                VenusSto = ephByTargetBodyAndDay[((int)Body.venus, e.Day)].StoAngle,
+                VenusSot = ephByTargetBodyAndDay[((int)Body.venus, e.Day)].SotAngle,
+                LunaSto = ephByTargetBodyAndDay[((int)Body.luna, e.Day)].StoAngle,
+                LunaSot = ephByTargetBodyAndDay[((int)Body.luna, e.Day)].SotAngle,
+                JupiterSto = ephByTargetBodyAndDay[((int)Body.jupiter, e.Day)].StoAngle,
+                JupiterSot = ephByTargetBodyAndDay[((int)Body.jupiter, e.Day)].SotAngle,
+                JupiterOnsideOffset = GetOffsetFromMinimaOrDefault(e.Day, jupiterOnsideMinima),
+                JupiterOffsideOffset = GetOffsetFromMinimaOrDefault(e.Day, jupiterOffsideMinima)
+            })
+            .ToArray();
+
+        var prefix = $"{_versionProvider.GetVersion()}";
+        using var writer = new StreamWriter(
+            _configuration.GetFullPath($"{prefix}-earthquakes-with-ephemeris.csv")
+        );
         using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-        csv.WriteRecords(_dbContext.Earthquakes.OrderBy(e => e.OccurredOn));
-        return Task.CompletedTask;
+        csv.WriteRecords(earthquakesWithEphemeris);
+    }
+
+    private static int? GetOffsetFromMinimaOrDefault(
+        DateOnly target,
+        DateOnly[] minima,
+        int minimumOffsetAllowed = -50,
+        int maximumOffsetAllowed = 300
+    )
+    {
+        var minimumOffset = default(int?);
+        foreach (var minimum in minima)
+        {
+            var offset = target.DayNumber - minimum.DayNumber;
+
+            if (offset >= minimumOffsetAllowed && offset <= maximumOffsetAllowed)
+            {
+                if (minimumOffset is null || Math.Abs(offset) < Math.Abs(minimumOffset.Value))
+                {
+                    minimumOffset = offset;
+                }
+            }
+
+            // Differences only going to get larger, so we can stop checking
+            if (offset < minimumOffsetAllowed)
+            {
+                return minimumOffset;
+            }
+        }
+
+        return minimumOffset;
     }
 }

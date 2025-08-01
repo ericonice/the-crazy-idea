@@ -14,7 +14,7 @@ public class CommandLineOptions
     [Option(
         "command-type",
         Required = true,
-        HelpText = $"Type of command to perform (LoadEarthquakes, GetEarthquakes, GetEarthquakesWithEphemeris, LoadEphemeris, GetEphemeris, EvaluateChiSquaredForEarthquakeIntervals, DetermineEarthquakesInInterval)"
+        HelpText = $"Type of command to perform (LoadEarthquakes, LoadEphemeris, GetEarthquakes, GetEphemeris, EvaluateChiSquaredForEarthquakeIntervals, DetermineEarthquakesInInterval)"
     )]
     public CommandType CommandType { get; set; }
 

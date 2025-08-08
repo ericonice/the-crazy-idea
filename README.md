@@ -12,7 +12,7 @@
 1. **Clone the repository:**
 
    ```bash
-   git clone git@github.com:ericonice/the-crazy-idea.git
+   git clone https://github.com/ericonice/the-crazy-idea.git
    cd the-crazy-idea
    ```
 

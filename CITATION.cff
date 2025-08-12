@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+title: The Crazy Idea
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Elizabeth
+    family-names: Holt
+    email: earoripaugh@gmail.com
+  - given-names: Eric
+    family-names: Newman
+    email: ericonice@gmail.com
+repository-code: 'https://github.com/ericonice/the-crazy-idea'
+preferred-citation:
+  type: article
+  authors:
+    - given-names: Elizabeth
+      family-names: Holt
+    - given-names: Eric
+      family-names: Newman
+  title: "Tidal Triggering of Magnitude 7+ Earthquakes by Jupiter"
+  journal: "arXiv"
+  year: 2025
+  url: "http://arxiv.org/abs/2508.07064"

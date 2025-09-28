@@ -5,7 +5,7 @@ namespace Earthquakes;
 
 public class CommandLineOptions
 {
-    [Option("alignment", Required = false, HelpText = $"Alignment type (All, Onside, Offside)")]
+    [Option("alignment", Required = false, HelpText = $"Alignment type (all, onside, offside)")]
     public AlignmentType? Alignment { get; set; }
 
     [Option("center-body", Required = false, HelpText = "Center Body", Default = Body.earth)]

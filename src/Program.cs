@@ -64,8 +64,13 @@ internal class Program
         int intervalOffsetEnd = default;
         int minimumInterval = default;
         int maximumInterval = default;
-        Parser
-            .Default.ParseArguments<CommandLineOptions>(args)
+
+        var parser = new Parser(with =>
+        {
+            with.CaseInsensitiveEnumValues = true;
+            with.HelpWriter = Console.Out;
+        })
+            .ParseArguments<CommandLineOptions>(args)
             .WithParsed(o =>
             {
                 sunSpotsFileName = o.SunSpotsFileName;

@@ -10,10 +10,12 @@ public record LoadEarthquakeCommand(DateOnly StartOn, DateOnly EndOn, decimal Mi
 
 public class LoadEarthquakeCommandHandler(
     ILogger<LoadEarthquakeCommand> logger,
-    AppDbContext dbContext
+    AppDbContext dbContext,
+    EarthquakeService earthquakeService
 ) : IRequestHandler<LoadEarthquakeCommand>
 {
     private readonly AppDbContext _dbContext = dbContext;
+    private readonly EarthquakeService _earthquakeService = earthquakeService;
     private readonly ILogger<LoadEarthquakeCommand> _logger = logger;
 
     public async Task Handle(LoadEarthquakeCommand request, CancellationToken cancellationToken)
@@ -23,12 +25,11 @@ public class LoadEarthquakeCommandHandler(
         var deletedRows = await _dbContext.Earthquakes.ExecuteDeleteAsync(cancellationToken);
         _logger.LogInformation($"Deleted [{deletedRows}] earthquakes.");
 
-        var service = new EarthquakeService(
+        var earthquakes = await _earthquakeService.GetEarthquakesAsync(
             startOn: request.StartOn,
             endOn: request.EndOn,
             minimumMagnitude: request.MinimumMagnitude
         );
-        var earthquakes = await service.GetEarthquakesAsync();
         _logger.LogInformation($"Earthquake service returned [{earthquakes.Count()}] earthquakes");
 
         // Load the earthquake data

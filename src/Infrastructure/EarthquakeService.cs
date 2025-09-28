@@ -1,47 +1,57 @@
 ﻿using System.Globalization;
 using CsvHelper;
 using Earthquakes.Domain;
+using Microsoft.Extensions.Logging;
 
 namespace Earthquakes.Infrastructure;
 
 public class EarthquakeService
 {
-    private readonly DateOnly _endOn;
-    private readonly decimal _minimumMagnitude;
-    private readonly DateOnly _startOn;
+    private const string UsgsBaseUrl = "https://earthquake.usgs.gov/fdsnws/event/1";
+    private readonly ILogger<EarthquakeService> _logger;
 
-    public EarthquakeService(DateOnly startOn, DateOnly endOn, decimal minimumMagnitude)
+    public EarthquakeService(ILogger<EarthquakeService> logger)
     {
-        _startOn = startOn;
-        _endOn = endOn;
-        _minimumMagnitude = minimumMagnitude;
+        _logger = logger;
     }
 
-    public async Task<Earthquake[]> GetEarthquakesAsync()
+    public async Task<Earthquake[]> GetEarthquakesAsync(
+        DateOnly startOn,
+        DateOnly endOn,
+        decimal minimumMagnitude
+    )
     {
-        // Chunk
-        return await GetEarthquakesAsync(startOn: _startOn, endOn: _endOn);
-    }
+        _logger.LogInformation("Getting earthquakes");
 
-    public async Task<Earthquake[]> GetEarthquakesAsync(DateOnly startOn, DateOnly endOn)
-    {
         using var client = new HttpClient();
-        string url =
-            $"https://earthquake.usgs.gov/fdsnws/event/1/query.csv?starttime={startOn}%2000:00:00&endtime={endOn}%2023:59:59&minmagnitude={_minimumMagnitude}&orderby=time-asc";
 
-        var response = await client.GetAsync(url);
-        response.EnsureSuccessStatusCode();
+        // Get the count of earthquakes so we can page through the results
+        string countUrl =
+            $"{UsgsBaseUrl}/count?starttime={startOn:yyyy-MM-dd}&endtime={endOn:yyyy-MM-dd}&minmagnitude={minimumMagnitude}";
+        var countResponse = await client.GetAsync(countUrl);
+        countResponse.EnsureSuccessStatusCode();
+        var totalEarthquakes = int.Parse(await countResponse.Content.ReadAsStringAsync());
+        _logger.LogInformation($"Total earthquakes found: {totalEarthquakes}");
 
-        var data = await response.Content.ReadAsStringAsync();
-
-        Earthquake[] earthquakes;
-        using (var reader = new StringReader(data))
-        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+        // Page through the results
+        var allEarthquakes = new List<Earthquake>();
+        const int limit = 10000;
+        for (int offset = 1; offset <= totalEarthquakes; offset += limit)
         {
+            _logger.LogInformation($"Getting earthquakes for offset {offset}");
+            string dataUrl =
+                $"{UsgsBaseUrl}/query.csv?starttime={startOn:yyyy-MM-dd}&endtime={endOn:yyyy-MM-dd}&minmagnitude={minimumMagnitude}&orderby=time-asc&limit={limit}&offset={offset}";
+
+            var dataResponse = await client.GetAsync(dataUrl);
+            dataResponse.EnsureSuccessStatusCode();
+            var data = await dataResponse.Content.ReadAsStringAsync();
+
+            using var reader = new StringReader(data);
+            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
             csv.Context.RegisterClassMap<EarthquakeMap>();
-            earthquakes = csv.GetRecords<Earthquake>().ToArray();
+            allEarthquakes.AddRange(csv.GetRecords<Earthquake>());
         }
 
-        return earthquakes;
+        return [.. allEarthquakes];
     }
 }

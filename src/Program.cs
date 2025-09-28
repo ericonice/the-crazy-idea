@@ -24,6 +24,7 @@ internal class Program
         var serviceProvider = new ServiceCollection()
             .AddSingleton<VersionProvider>()
             .AddSingleton<IConfiguration>(configuration)
+            .AddSingleton<EarthquakeService>()
             .AddLogging(builder =>
             {
                 builder.AddConsole();

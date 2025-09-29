@@ -61,6 +61,7 @@ internal class Program
         DateOnly startOn = default;
         DateOnly endOn = default;
         decimal minimumMagnitude = default;
+        decimal? maximumMagnitude = default;
         int intervalOffsetStart = default;
         int intervalOffsetEnd = default;
         int minimumInterval = default;
@@ -83,6 +84,7 @@ internal class Program
                 intervalOffsetStart = o.IntervalOffsetStart ?? -30;
                 intervalOffsetEnd = o.IntervalOffsetEnd ?? 15;
                 minimumMagnitude = o.MinimumMagnitude ?? 7;
+                maximumMagnitude = o.MaximumMagnitude;
                 minimumInterval = o.MinimumInterval ?? 5;
                 maximumInterval = o.MaximumInterval ?? 60;
                 alignmentType = o.Alignment ?? AlignmentType.all;
@@ -134,6 +136,7 @@ internal class Program
                         CenterBody: centerBody,
                         TargetBody: targetBody,
                         MinimumMagnitude: minimumMagnitude,
+                        MaximumMagnitude: maximumMagnitude,
                         IntervalOffsetStart: intervalOffsetStart,
                         IntervalOffsetEnd: intervalOffsetEnd,
                         MinimumInterval: minimumInterval,
@@ -151,6 +154,7 @@ internal class Program
                         CenterBody: centerBody,
                         TargetBody: targetBody,
                         MinimumMagnitude: minimumMagnitude,
+                        MaximumMagnitude: maximumMagnitude,
                         IntervalOffsetStart: intervalOffsetStart,
                         IntervalOffsetEnd: intervalOffsetEnd,
                         AlignmentType: alignmentType

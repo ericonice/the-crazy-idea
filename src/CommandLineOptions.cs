@@ -45,6 +45,9 @@ public class CommandLineOptions
     )]
     public int? MaximumInterval { get; set; }
 
+    [Option("maximum-magnitude", Required = false, HelpText = "Maximum magnitude")]
+    public decimal? MaximumMagnitude { get; set; }
+
     [Option(
         "minimum-interval",
         Required = false,

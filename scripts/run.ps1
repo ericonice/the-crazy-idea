@@ -8,10 +8,10 @@ param (
     [string]$evaluate_start_date = "1/1/1960",
     [string]$evaluate_end_date = "12/31/2024",
 
-    [int]$min_magnitude = 7,
+    [decimal]$min_magnitude = 7.0,
 
-    [int]$minimum_interval = 5,
-    [int]$maximum_interval = 45,
+    [int]$min_interval = 5,
+    [int]$max_interval = 45,
     [int]$interval_offset_start = -120,
     [int]$interval_offset_end = 120,
 
@@ -57,9 +57,10 @@ if ($evaluate_chi_squared_for_earthquake_intervals) {
                      --end-date $evaluate_end_date `
                      --interval-offset-start $interval_offset_start `
                      --interval-offset-end $interval_offset_end `
-                     --minimum-interval $minimum_interval `
-                     --maximum-interval $maximum_interval `
-                     --alignment onside
+                     --minimum-interval $min_interval `
+                     --maximum-interval $max_interval `
+                     --alignment onside `
+                     --minimum-magnitude $min_magnitude
 
         dotnet run -- --command-type EvaluateChiSquaredForEarthquakeIntervals `
                      --center-body earth `
@@ -68,9 +69,10 @@ if ($evaluate_chi_squared_for_earthquake_intervals) {
                      --end-date $evaluate_end_date `
                      --interval-offset-start $interval_offset_start `
                      --interval-offset-end $interval_offset_end `
-                     --minimum-interval $minimum_interval `
-                     --maximum-interval $maximum_interval `
-                     --alignment offside
+                     --minimum-interval $min_interval `
+                     --maximum-interval $max_interval `
+                     --alignment offside `
+                     --minimum-magnitude $min_magnitude
     }
 }
 

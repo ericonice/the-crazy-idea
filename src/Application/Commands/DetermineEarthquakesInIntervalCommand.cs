@@ -15,6 +15,7 @@ public record DetermineEarthquakesInIntervalCommand(
     Body CenterBody,
     Body TargetBody,
     decimal MinimumMagnitude,
+    decimal? MaximumMagnitude,
     int IntervalOffsetStart,
     int IntervalOffsetEnd,
     AlignmentType AlignmentType
@@ -45,6 +46,7 @@ public class DetermineEarthquakesInIntervalCommandHandler(
         Console.Out.WriteLine($"Center Body           : {request.CenterBody}");
         Console.Out.WriteLine($"Target Body           : {request.TargetBody}");
         Console.Out.WriteLine($"Minimum Magnitude     : {request.MinimumMagnitude}");
+        Console.Out.WriteLine($"Maximum Magnitude     : {request.MaximumMagnitude}");
         Console.Out.WriteLine($"Interval Offset Start : {request.IntervalOffsetStart}");
         Console.Out.WriteLine($"Interval Offset End   : {request.IntervalOffsetEnd}");
         Console.Out.WriteLine($"Alignment Type        : {request.AlignmentType}");
@@ -72,12 +74,20 @@ public class DetermineEarthquakesInIntervalCommandHandler(
         var startOnDateTime = ToDateTimeOffset(startOn);
         var endOnDateTime = ToDateTimeOffset(endOn).AddDays(1);
         var numberOfDays = (endOnDateTime - startOnDateTime).Days - 1;
-        var earthquakes = await _dbContext
-            .Earthquakes.Where(e =>
-                e.OccurredOn >= startOnDateTime
-                && e.OccurredOn < endOnDateTime
-                && e.Magnitude >= request.MinimumMagnitude
-            )
+
+        var earthquakesQuery = _dbContext.Earthquakes.Where(e =>
+            e.OccurredOn >= startOnDateTime
+            && e.OccurredOn < endOnDateTime
+            && e.Magnitude >= request.MinimumMagnitude
+        );
+        if (request.MaximumMagnitude.HasValue)
+        {
+            earthquakesQuery = earthquakesQuery.Where(e =>
+                e.Magnitude <= request.MaximumMagnitude.Value
+            );
+        }
+
+        var earthquakes = await earthquakesQuery
             .OrderBy(e => e.OccurredOn)
             .Select(e => new { Day = DateOnly.FromDateTime(e.OccurredOn.DateTime), Earthquake = e })
             .ToArrayAsync(cancellationToken);
